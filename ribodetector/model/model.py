@@ -110,10 +110,12 @@ def first_items(pack: PackedSequence, unsort: bool) -> Tensor:
     else:
         return pack.data[:pack.batch_sizes[0]]
 
-
+# per https://github.com/hzi-bifo/RiboDetector/issues/40#issuecomment-1730027346
 @jit.script
 def last_items(pack: PackedSequence, unsort: bool) -> Tensor:
     indices = sorted_last_indices(pack=pack)
     if unsort and pack.unsorted_indices is not None:
+        # Move indices to the same device as pack.data
+        indices = indices.to(pack.data.device)
         indices = indices[pack.unsorted_indices]
     return pack.data[indices]
